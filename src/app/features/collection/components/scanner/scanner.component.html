@@ -1,0 +1,14 @@
+<div class="scanner-container">
+  <video #video autoplay playsinline></video>
+
+  <div class="overlay">
+    <div class="scan-frame"></div>
+  </div>
+
+  <div class="controls">
+    <button (click)="capture()">Capture</button>
+  </div>
+  
+  <canvas #canvas style="display:none;"></canvas>
+</div>
+

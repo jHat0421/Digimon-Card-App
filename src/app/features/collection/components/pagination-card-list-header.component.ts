@@ -5,19 +5,27 @@ import { PaginatorModule } from 'primeng/paginator';
 import { SliderModule } from 'primeng/slider';
 import { SaveStore } from '@store';
 import { DigimonCardStore } from '@store';
+import { DialogModule } from 'primeng/dialog';
+import { ViewChild } from '@angular/core';
+import { ScannerComponent } from './scanner/scanner.component';
 
 @Component({
   selector: 'digimon-pagination-card-list-header',
   template: `
     <div class="relative flex justify-center items-center h-10 w-full flex-row">
       <div *ngIf="!viewOnly" class="absolute left-2 top-4 flex flex-row justify-center items-center">
-        <span class="text-xs hidden sm:block font-bold text-[#e2e4e6]">Collection Mode:</span>
+        <button class="hidden sm:block px-3 py-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition" (click)="displayScanner = true">Scan Card</button>
+        <span class="ml-6 text-xs hidden sm:block font-bold text-[#e2e4e6]">Collection Mode:</span>
         <span class="text-xs sm:hidden font-bold text-[#e2e4e6]">CM:</span>
         <input type="checkbox" class="my-auto ml-1 h-5 w-5" [ngModel]="collectionMode()" (ngModelChange)="changeCollectionMode($event)" />
         <span class="ml-6 text-xs font-bold text-[#e2e4e6]"> Cards: {{ cardCount() }} </span>
       </div>
 
       <p-slider class="w-32 md:w-36 lg:w-56" [formControl]="widthForm" [step]="0.1" [min]="3" [max]="14"></p-slider>
+      
+      <p-dialog header="Scan Card" [(visible)]="displayScanner" [resizable]="false" [draggable]="false" [modal]="true" [closable]="true" [style]="{ width: '90vw', maxWidth: '400px' }" [contentStyle]="{ height: '50vh' }" (onShow)="onDialogOpen()" [breakpoints]="{ '960px': '95vw', '640px': '100vw' }" (onHide)="onDialogClose()" >
+        <app-scanner #scanner></app-scanner>
+      </p-dialog>
 
       <div [ngClass]="{ 'xl:hidden ': !filterButton }" class="mx-2 mt-2 flex flex-row justify-center absolute right-2">
         <button
@@ -31,13 +39,15 @@ import { DigimonCardStore } from '@store';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [PaginatorModule, FormsModule, NgIf, SliderModule, ReactiveFormsModule, NgClass],
+  imports: [PaginatorModule, FormsModule, NgIf, SliderModule, ReactiveFormsModule, NgClass, DialogModule, ScannerComponent],
 })
+
 export class PaginationCardListHeaderComponent {
   @Input() widthForm!: FormControl;
   @Input() viewOnly!: boolean;
   @Input() filterButton: boolean | null = true;
   @Output() filterBox = new EventEmitter<boolean>();
+  @ViewChild('scanner') scannerComponent!: ScannerComponent;
 
   saveStore = inject(SaveStore);
   digimonCardStore = inject(DigimonCardStore);
@@ -55,5 +65,16 @@ export class PaginationCardListHeaderComponent {
 
   closeFilterSidebox() {
     this.filterBox.emit(true);
+  }
+
+  //scanner
+  displayScanner: boolean = false;
+
+  onDialogOpen() {
+    this.scannerComponent?.start();
+  }
+
+  onDialogClose() {
+    this.scannerComponent?.stop();
   }
 }
